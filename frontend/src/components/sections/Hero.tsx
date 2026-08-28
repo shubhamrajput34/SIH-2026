@@ -106,7 +106,7 @@ export function Hero() {
         },
         (context) => {
           const { desktop, tablet } = context.conditions as Record<string, boolean>;
-          const length = desktop ? 3.2 : tablet ? 2.6 : 1.9;
+          const length = desktop ? 6.5 : tablet ? 5.2 : 4.0;
 
           const tl = gsap.timeline({
             scrollTrigger: {
@@ -129,13 +129,13 @@ export function Hero() {
 
           gsap.set(verbPanels, { autoAlpha: 0, yPercent: 20, scale: 1.06 });
 
-          tl.to(cueRef.current, { autoAlpha: 0, duration: 0.4 }, 0.05);
+          tl.to(cueRef.current, { autoAlpha: 0, duration: 0.5 }, 0.05);
 
           /*
            * Lines separate — controlled fade-out, NO rotation to prevent overlap.
            * Each line moves in its own direction but stays legible and non-colliding.
            */
-          tl.addLabel('fragment', 0.55);
+          tl.addLabel('fragment', 0.9);
           lines.forEach((line, i) => {
             const dir = i % 2 === 0 ? -1 : 1;
             tl.to(
@@ -145,32 +145,33 @@ export function Hero() {
                 yPercent: (i - 2) * 18,
                 scale: 0.92,
                 opacity: 0,
-                duration: 1.0,
+                duration: 1.2,
                 ease: 'power2.in',
               },
-              'fragment+=' + i * 0.06,
+              'fragment+=' + i * 0.08,
             );
           });
 
           /* Lines clear; the object owns the frame. */
-          tl.addLabel('assemble', 1.7);
+          tl.addLabel('assemble', 2.4);
 
           /* The four verbs — the pipeline stages. Each verb fully exits
            * before the next enters to prevent overlap. */
-          tl.addLabel('verbs', 2.6);
+          tl.addLabel('verbs', 3.4);
+          const step = 2.6;
           verbPanels.forEach((panel, i) => {
-            const at = 'verbs+=' + i * 1.4;
-            tl.to(panel, { autoAlpha: 1, yPercent: 0, scale: 1, duration: 0.6, ease: 'expo.out' }, at);
+            const at = 'verbs+=' + i * step;
+            tl.to(panel, { autoAlpha: 1, yPercent: 0, scale: 1, duration: 0.75, ease: 'expo.out' }, at);
             if (i < verbPanels.length - 1) {
               tl.to(
                 panel,
-                { autoAlpha: 0, yPercent: -24, scale: 0.9, duration: 0.6, ease: 'power2.in' },
-                at + '+=0.75',
+                { autoAlpha: 0, yPercent: -24, scale: 0.9, duration: 0.7, ease: 'power2.in' },
+                at + '+=1.75',
               );
             }
           });
 
-          tl.to({}, { duration: 0.55 });
+          tl.to({}, { duration: 1.2 });
 
           return () => {
             tl.scrollTrigger?.kill();
