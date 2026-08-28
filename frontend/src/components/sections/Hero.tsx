@@ -106,7 +106,7 @@ export function Hero() {
         },
         (context) => {
           const { desktop, tablet } = context.conditions as Record<string, boolean>;
-          const length = desktop ? 6.5 : tablet ? 5.2 : 4.0;
+          const length = desktop ? 5.5 : tablet ? 4.5 : 3.5;
 
           const tl = gsap.timeline({
             scrollTrigger: {
@@ -127,15 +127,16 @@ export function Hero() {
             },
           });
 
-          gsap.set(verbPanels, { autoAlpha: 0, yPercent: 20, scale: 1.06 });
+          gsap.set(verbPanels, { autoAlpha: 0, yPercent: 24, scale: 1.04 });
 
-          tl.to(cueRef.current, { autoAlpha: 0, duration: 0.5 }, 0.05);
+          tl.to(cueRef.current, { autoAlpha: 0, duration: 0.3 }, 0.05);
 
           /*
            * Lines separate — controlled fade-out, NO rotation to prevent overlap.
-           * Each line moves in its own direction but stays legible and non-colliding.
+           * Each line moves in its own direction smoothly.
            */
-          tl.addLabel('fragment', 0.9);
+          const tFragment = 0.35;
+          const fragmentDuration = 0.9;
           lines.forEach((line, i) => {
             const dir = i % 2 === 0 ? -1 : 1;
             tl.to(
@@ -145,33 +146,47 @@ export function Hero() {
                 yPercent: (i - 2) * 18,
                 scale: 0.92,
                 opacity: 0,
-                duration: 1.2,
-                ease: 'power2.in',
+                duration: fragmentDuration,
+                ease: 'power2.inOut',
               },
-              'fragment+=' + i * 0.08,
+              tFragment + i * 0.05,
             );
           });
 
-          /* Lines clear; the object owns the frame. */
-          tl.addLabel('assemble', 2.4);
+          /*
+           * The four verbs — continuous, seamless relay transitions:
+           * Every text gets a dedicated, calm reading window before smoothly
+           * transitioning to the next stage.
+           */
+          const tVerbs = tFragment + fragmentDuration; // 1.25
+          const enterDur = 0.75;
+          const holdDur = 1.6;
+          const exitDur = 0.75;
+          const step = enterDur + holdDur; // 2.35s between each verb start
 
-          /* The four verbs — the pipeline stages. Each verb fully exits
-           * before the next enters to prevent overlap. */
-          tl.addLabel('verbs', 3.4);
-          const step = 2.6;
           verbPanels.forEach((panel, i) => {
-            const at = 'verbs+=' + i * step;
-            tl.to(panel, { autoAlpha: 1, yPercent: 0, scale: 1, duration: 0.75, ease: 'expo.out' }, at);
+            const enterStart = tVerbs + i * step;
+            const exitStart = enterStart + enterDur + holdDur;
+
+            // Smooth entrance into center
+            tl.to(
+              panel,
+              { autoAlpha: 1, yPercent: 0, scale: 1, duration: enterDur, ease: 'power2.out' },
+              enterStart,
+            );
+
+            // Synchronized exit right as next element begins entering
             if (i < verbPanels.length - 1) {
               tl.to(
                 panel,
-                { autoAlpha: 0, yPercent: -24, scale: 0.9, duration: 0.7, ease: 'power2.in' },
-                at + '+=1.75',
+                { autoAlpha: 0, yPercent: -22, scale: 0.95, duration: exitDur, ease: 'power2.in' },
+                exitStart,
               );
             }
           });
 
-          tl.to({}, { duration: 1.2 });
+          const totalDuration = tVerbs + (verbPanels.length - 1) * step + enterDur + holdDur + 1.0;
+          tl.to({}, { duration: 1.0 }, totalDuration);
 
           return () => {
             tl.scrollTrigger?.kill();
